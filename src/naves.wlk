@@ -1,23 +1,22 @@
-//Hacer que todas las naves se puedan preparar 
-//para viajar. Esto hace que aumenten su velocidad 15.000 
-//(teniendo la restricción de la velocidad máxima posible
-//	de 300.000kms/s). Además de eso,
-
+//Clase Abstracta, las clases abstractas no pueden ser instanciadas
+// ya que tienen métodos no definidos.
 class Nave{
 	var property velocidad = 0
 	 
-	method encontrarEnemigo(){
-		self.recibirAmenaza()
-		self.propulsar()	
+	//Template method C = A + B, A or B or A ^ B los definen las subclases o sobreescriben.
+	method encontrarEnemigo(){ //A + B
+		self.recibirAmenaza() //A
+		self.propulsar()	//B
 	} 
 	
-	method recibirAmenaza()
+	//Método Abstracto
+	method recibirAmenaza() //A
 	
 	method aumentarVelocidad(cantidad){
 		velocidad = 300000.min(velocidad + cantidad)
 	}
 	
-	method propulsar(){
+	method propulsar(){ //B
 		self.aumentarVelocidad(20000)	
 	}
 	
@@ -44,7 +43,7 @@ class NaveDeCargaRadioactiva inherits NaveDeCarga{
 	method estaSellada() = estaSellada
 	
 	override method velocidad(nueva){
-		super(nueva)
+		super(nueva) //utilizá el código de su superclase
 		estaSellada = false
 	}
 	
@@ -59,7 +58,7 @@ class NaveDeCargaRadioactiva inherits NaveDeCarga{
 	
 	override method preparar(){
 		self.sellarAlVacio()
-		super()	
+		super()	//utiliza el código de la superclase
 	}
 }
 
@@ -111,24 +110,18 @@ class NaveDeCombate inherits Nave{
 	
 	override method preparar(){
 		modo.preparar(self)
-		super()
-		
+		super()	
 	}
 }
 
-//las de combate, si se encuentran en modo ataque 
-//emiten el mensaje "Volviendo a la base", 
-//mientras que si están en reposo 
-//emiten el mensaje "Saliendo en misión" 
-//y se ponen en modo ataque.
-
-
+//Clase abstracta
 class Modo{
 	method recibirAmenaza(nave) {
 		nave.emitirMensaje(self.mensajeAmenaza())
 	}
 	
-	method mensajeAmenaza()
+	method mensajeAmenaza() //Método abstracto, 
+	//method mensajeAmenaza(){} NO SERÍA ABSTRACTO, ya que es "no hacer nada"
 }
 
 object reposo inherits Modo{
