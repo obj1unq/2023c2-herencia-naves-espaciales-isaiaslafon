@@ -1,21 +1,69 @@
-class NaveDeCarga {
+//Hacer que todas las naves se puedan preparar 
+//para viajar. Esto hace que aumenten su velocidad 15.000 
+//(teniendo la restricción de la velocidad máxima posible
+//	de 300.000kms/s). Además de eso,
 
-	var velocidad = 0
+class Nave{
+	var property velocidad = 0
+	 
+	method encontrarEnemigo(){
+		self.recibirAmenaza()
+		self.propulsar()	
+	} 
+	
+	method recibirAmenaza()
+	
+	method aumentarVelocidad(cantidad){
+		velocidad = 300000.min(velocidad + cantidad)
+	}
+	
+	method propulsar(){
+		self.aumentarVelocidad(20000)	
+	}
+	
+	method preparar(){
+		self.aumentarVelocidad(15000)
+	}
+}
+
+class NaveDeCarga inherits Nave{
 	var property carga = 0
 
 	method sobrecargada() = carga > 100000
 
 	method excedidaDeVelocidad() = velocidad > 100000
 
-	method recibirAmenaza() {
+	override method recibirAmenaza() {
 		carga = 0
 	}
-
 }
 
-class NaveDePasajeros {
+class NaveDeCargaRadioactiva inherits NaveDeCarga{
+	var estaSellada = false
+	
+	method estaSellada() = estaSellada
+	
+	override method velocidad(nueva){
+		super(nueva)
+		estaSellada = false
+	}
+	
+	method sellarAlVacio(){
+		velocidad = 0
+		estaSellada = true
+	}
+	
+	override method recibirAmenaza() {
+		self.sellarAlVacio()
+	}
+	
+	override method preparar(){
+		self.sellarAlVacio()
+		super()	
+	}
+}
 
-	var velocidad = 0
+class NaveDePasajeros inherits Nave{
 	var property alarma = false
 	const cantidadDePasajeros = 0
 
@@ -25,48 +73,95 @@ class NaveDePasajeros {
 
 	method estaEnPeligro() = velocidad > self.velocidadMaximaLegal() or alarma
 
-	method recibirAmenaza() {
+	override method recibirAmenaza() {
 		alarma = true
 	}
-
 }
 
-class NaveDeCombate {
-	var property velocidad = 0
-	var property modo = reposo
-	const property mensajesEmitidos = []
 
+
+class NaveDeCombate inherits Nave{
+	var property modo = reposo
+	var armasDesplegadas = false
+	const property mensajesEmitidos = []
+	
+	method armasDesplegadas(){
+		return armasDesplegadas	
+	}
+
+	method desplegarArmas(){
+		armasDesplegadas = true	
+	}
+	
+	method replegarArmas(){
+		armasDesplegadas = false	
+	}
+		
 	method emitirMensaje(mensaje) {
 		mensajesEmitidos.add(mensaje)
 	}
 	
 	method ultimoMensaje() = mensajesEmitidos.last()
 
-	method estaInvisible() = velocidad < 10000 and modo.invisible()
+	method estaInvisible() = modo.invisible(self)
 
-	method recibirAmenaza() {
+	override method recibirAmenaza() {
 		modo.recibirAmenaza(self)
 	}
-
+	
+	override method preparar(){
+		modo.preparar(self)
+		super()
+		
+	}
 }
 
-object reposo {
+//las de combate, si se encuentran en modo ataque 
+//emiten el mensaje "Volviendo a la base", 
+//mientras que si están en reposo 
+//emiten el mensaje "Saliendo en misión" 
+//y se ponen en modo ataque.
 
-	method invisible() = false
 
+class Modo{
 	method recibirAmenaza(nave) {
-		nave.emitirMensaje("¡RETIRADA!")
+		nave.emitirMensaje(self.mensajeAmenaza())
 	}
-
+	
+	method mensajeAmenaza()
 }
 
-object ataque {
+object reposo inherits Modo{
+	method invisible(nave) {
+		return nave.velocidad() < 10000 
+	}
+	
+	override method mensajeAmenaza() {
+		return "¡RETIRADA!"
+	}
+	
+	method preparar(nave){
+		nave.emitirMensaje("Saliendo en misión")
+		nave.modo(ataque)
+	}
+}
 
-	method invisible() = true
-
-	method recibirAmenaza(nave) {
-		nave.emitirMensaje("Enemigo encontrado")
+object ataque inherits Modo {
+	method invisible(nave) {
+		return not nave.armasDesplegadas()
 	}
 
+	override method recibirAmenaza(nave) {
+		super(nave)
+		nave.desplegarArmas()
+	}
+	
+	override method mensajeAmenaza() {
+		return "Enemigo encontrado"
+	}
+	
+	method preparar(nave){
+		nave.emitirMensaje("Volviendo a la base")
+	}
 }
 

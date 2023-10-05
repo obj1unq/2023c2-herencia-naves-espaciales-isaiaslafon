@@ -25,7 +25,33 @@ describe "Nave de carga" {
 		naveLlena.recibirAmenaza()
 		assert.equals(0, naveVacia.carga())
 	}
+	
+	test "Nave vacia y llena con velocidad 0, al propulsarse, queda en 20.000"{
+		naveVacia.velocidad(0)
+		naveLlena.velocidad(0)
+		naveVacia.propulsar()
+		naveLlena.propulsar()
+		
+		assert.equals(20000, naveVacia.velocidad())
+		assert.equals(20000, naveLlena.velocidad())
+	}
 
+}
+
+describe "Nave de carga radioactiva" {
+	const naveLlena = new NaveDeCargaRadioactiva(carga = 5000, velocidad = 10000)
+
+ 	test "Transporta 5.000kg, sellados al vacío a 10.000,
+		al recibir una amenaza frenan pero su carga sigue siendo la misma."{
+
+		naveLlena.sellarAlVacio()
+		naveLlena.velocidad(10000)
+		naveLlena.recibirAmenaza()
+		
+		assert.that(naveLlena.estaSellada())
+		assert.equals(0, naveLlena.velocidad())
+		assert.equals(5000, naveLlena.carga())
+	}
 }
 
 describe "Nave de pasajeros" {
@@ -54,6 +80,13 @@ describe "Nave de pasajeros" {
 		assert.that(naveSinPasajeros.alarma())
 	}
 
+	test "Nave sin pasajeros viajar a 290.000 al propulsarse 
+		queda viajando a 300.000"{
+		
+		naveSinPasajeros.velocidad(290000)
+		naveSinPasajeros.propulsar()
+		assert.equals(300000, naveSinPasajeros.velocidad())
+	}
 }
 
 describe "Nave de combate" {
@@ -61,16 +94,22 @@ describe "Nave de combate" {
 	const naveEnReposo = new NaveDeCombate()
 	const naveEnAtaque = new NaveDeCombate(modo = ataque)
 
-	test "no esta invisible en reposo" {
+	test "Esta invisible en reposo y viajando a menos de 10.000" {
+		assert.that(naveEnReposo.estaInvisible())
+	}
+
+	test "No esta invisible en reposo porque viaja a más de 10.000" {
+		naveEnReposo.velocidad(11000)
 		assert.notThat(naveEnReposo.estaInvisible())
 	}
-
+	
 	test "esta invisible en ataque" {
+		naveEnAtaque.replegarArmas()
 		assert.that(naveEnAtaque.estaInvisible())
 	}
-
+		
 	test "no esta invisible en ataque" {
-		naveEnAtaque.velocidad(20000)
+		naveEnAtaque.desplegarArmas()
 		assert.notThat(naveEnAtaque.estaInvisible())
 	}
 
@@ -82,6 +121,8 @@ describe "Nave de combate" {
 	test "recibir amenaza en ataque" {
 		naveEnAtaque.recibirAmenaza()
 		assert.equals("Enemigo encontrado", naveEnAtaque.ultimoMensaje())
+		assert.that(naveEnAtaque.armasDesplegadas())
 	}
+	
 }
 
